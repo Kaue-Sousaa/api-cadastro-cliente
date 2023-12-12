@@ -17,7 +17,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "cadastro_cliente", schema = "cliente")
-@SequenceGenerator(name = "seq_cadastro_cliente", sequenceName = "seq_cadastro_cliente")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -25,6 +24,7 @@ public class Cliente {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY, generator = "seq_cadastro_cliente")
+	@SequenceGenerator(name = "seq_cadastro_cliente", sequenceName = "cliente.seq_cadastro_cliente", allocationSize = 1, initialValue = 1)
 	Integer id;
 	String nome;
 	String email;

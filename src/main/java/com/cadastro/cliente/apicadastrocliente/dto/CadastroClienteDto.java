@@ -6,33 +6,34 @@ import java.time.LocalDateTime;
 import com.cadastro.cliente.apicadastrocliente.model.Cliente;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 
 public record CadastroClienteDto(
 		
-		@NotBlank(message = "Campo Id obrigatorio")
 		Integer id,
 		
-		@NotBlank(message = "Campo nome obrigatorio")
+		@NotBlank(message = "Campo obrigatorio")
 		@Size(min = 1, max=255, message = "Campo só pode conter até 255 caracteres")
 		String nome,
 		
-		@NotBlank(message = "Campo email obrigatorio")
+		@NotBlank(message = "Campo obrigatorio")
 		@Size(min = 1, max=255, message = "Campo só pode conter até 255 caracteres")
 		String email,
 		
-		@NotBlank(message = "Campo cpf obrigatorio")
-		@Size(min = 11, max=11)
+		@NotBlank(message = "Campo obrigatorio")
+		@Size(min = 11, max=11, message="Campo tem que conter 11 caracteres")
 		String cpf,
 		
-		@NotBlank(message = "Campo renda obrigatorio")
+		@Digits(integer = 7, fraction = 2)
 		BigDecimal renda,
 
 		String telefone,
 		
 		@JsonFormat(pattern="dd/MM/yyyy HH:mm:ss")
+		
 		LocalDateTime dataCriacao
 		
 		) {
