@@ -1,15 +1,13 @@
 package com.cadastro.cliente.apicadastrocliente.repository;
 
-import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.cadastro.cliente.apicadastrocliente.model.Cliente;
+import com.cadastro.cliente.apicadastrocliente.model.CastroCliente;
 
 @Repository
-public interface CadastroClienteRepository extends JpaRepository<Cliente, Integer> {
+public interface CadastroClienteRepository extends JpaRepository<CastroCliente, Integer> {
 	
 	
-	Optional<Integer> findByNomeOrCpf(String nome, String cpf);
+	CastroCliente findByNomeOrCpf(String nome, String cpf);
 }

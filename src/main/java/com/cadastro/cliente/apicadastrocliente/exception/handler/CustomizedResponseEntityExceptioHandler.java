@@ -20,7 +20,7 @@ import com.cadastro.cliente.apicadastrocliente.exception.ResourceNotFoundExcepti
 @RestControllerAdvice
 public class CustomizedResponseEntityExceptioHandler {
 	
-	@ExceptionHandler({Exception.class, RequiredObjectIsNullException.class})
+	@ExceptionHandler({RequiredObjectIsNullException.class, MethodArgumentNotValidException.class})
 	public final ResponseEntity<ExceptionResponse> handleAllException(MethodArgumentNotValidException ex, WebRequest request){
 		BindingResult bindingResult = ex.getBindingResult();
         List<String> errorMessages = new ArrayList<>();

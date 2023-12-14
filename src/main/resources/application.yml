@@ -1,0 +1,20 @@
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+  sql:
+    init:
+      platform: postgresql
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/cliente
+    username: postgres
+    password: admin123456
+
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:my-secrety-key}

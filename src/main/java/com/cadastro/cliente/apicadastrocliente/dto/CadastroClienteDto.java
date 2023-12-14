@@ -3,7 +3,7 @@ package com.cadastro.cliente.apicadastrocliente.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.cadastro.cliente.apicadastrocliente.model.Cliente;
+import com.cadastro.cliente.apicadastrocliente.model.CastroCliente;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.Digits;
@@ -38,7 +38,7 @@ public record CadastroClienteDto(
 		
 		) {
 	
-	public CadastroClienteDto(Cliente cliente) {
+	public CadastroClienteDto(CastroCliente cliente) {
 		this(cliente.getId(), cliente.getNome(), cliente.getEmail(), cliente.getCpf(), cliente.getRenda(),
 				cliente.getTelefone(), cliente.getDataCriacao());
 	}
