@@ -32,12 +32,12 @@ public class CadastroClienteController {
 	
 	@PutMapping(value = "/atualizar",consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CadastroClienteDto> atualizarCadastroCliente(@RequestBody CadastroClienteDto dadosCliente){
+	public ResponseEntity<CadastroClienteDto> atualizarCadastroCliente(@Valid @RequestBody CadastroClienteDto dadosCliente){
 		return ResponseEntity.ok(service.atualizarCadastro(dadosCliente));
 	}
 	
 	@DeleteMapping(value = "/excluir/{id}")
-	public void deletarCadastroCliente(@PathVariable Integer id){
+	public void deletarCadastroCliente(@Valid @PathVariable Integer id){
 		service.deletarCadastro(id);
 	} 
 	

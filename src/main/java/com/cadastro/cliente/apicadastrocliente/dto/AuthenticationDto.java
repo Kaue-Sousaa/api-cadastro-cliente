@@ -1,5 +1,12 @@
 package com.cadastro.cliente.apicadastrocliente.dto;
 
-public record AuthenticationDto(String login, String password) {
+import jakarta.validation.constraints.NotBlank;
+
+public record AuthenticationDto(
+		@NotBlank
+		String login,
+		
+		@NotBlank
+		String password) {
 
 }

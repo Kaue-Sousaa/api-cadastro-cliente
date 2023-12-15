@@ -1,21 +1,17 @@
 package com.cadastro.cliente.apicadastrocliente.controller;
 
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cadastro.cliente.apicadastrocliente.dto.AuthenticationDto;
-import com.cadastro.cliente.apicadastrocliente.dto.LoginResponseDto;
-import com.cadastro.cliente.apicadastrocliente.dto.RegisterDto;
-import com.cadastro.cliente.apicadastrocliente.model.User;
-import com.cadastro.cliente.apicadastrocliente.repository.UserRepository;
-import com.cadastro.cliente.apicadastrocliente.security.TokenService;
+import com.cadastro.cliente.apicadastrocliente.security.AuthService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,31 +21,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationController {
 	
-	private final AuthenticationManager authenticationManager;
+	private final AuthService authService;
 	
-	private final UserRepository repository;
-	
-	private final TokenService tokenService;
-
+	@SuppressWarnings("rawtypes")
 	@PostMapping(value = "/login")
-	public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid AuthenticationDto data) {
-		var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
-		var auth = authenticationManager.authenticate(usernamePassword);
-		
-		var token = tokenService.genereteToken((User) auth.getPrincipal());
-		
-		return ResponseEntity.ok(new LoginResponseDto(token));
+	public ResponseEntity login(@RequestBody @Valid AuthenticationDto data) {
+		var token = authService.signin(data);
+		if(token == null) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Solicitação de Cliente Inválido!");
+		}
+		return token;
 	}
 	
-	@PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity register(@RequestBody @Valid RegisterDto data){
-		if(repository.findByLogin(data.login()) != null) {
-			return ResponseEntity.badRequest().build();
+	@SuppressWarnings("rawtypes")
+	@PutMapping(value = "/refresh/{login}")
+	public ResponseEntity refreshToken(@PathVariable("login") String login, @RequestHeader("Authorization") String refreshToken) {
+		var token = authService.refreshToken(login, refreshToken);
+		if(token == null) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Solicitação de Cliente Inválido!");
 		}
-		String encryPassword = new BCryptPasswordEncoder().encode(data.password());
-		User newUser = new User(data.login(), encryPassword, data.role());
-		
-		repository.save(newUser);
-		return ResponseEntity.ok().build();
+		return token;
 	}
 }
