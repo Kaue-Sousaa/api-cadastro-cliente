@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +18,6 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cadastro.cliente.apicadastrocliente.dto.TokenDto;
 import com.cadastro.cliente.apicadastrocliente.exception.InvalidJwtAuthenticationException;
-
 
 @Service
 public class TokenService {
@@ -35,14 +35,13 @@ public class TokenService {
 		this.userDetailsService = userDetailsService;
 	}
 
-	public TokenDto createAccessToken(String username, List<String> roles) {
+	public TokenDto createAccessToken(String email, List<String> roles) {
 		Date now = new Date();
 		Date validity = new Date(now.getTime() + validityInMilliseconds);
-		var accessToken = getAccessToken(username, roles, now, validity);
-		var refreshToken = getRefreshToken(username, roles,  now);
-		return new TokenDto(username,accessToken, refreshToken);
+		return new TokenDto(
+				getAccessToken(email, roles, now, validity),
+				getRefreshToken(email, roles,  now));
 	}
-	
 
 	public TokenDto refreshToken(String refreshToken) {
 		if(refreshToken.contains("Bearer ")) {
@@ -51,40 +50,39 @@ public class TokenService {
 		algorithm = Algorithm.HMAC256(secret);
 		JWTVerifier verifier = JWT.require(algorithm).build();
 		DecodedJWT decodedJWT = verifier.verify(refreshToken);
-		String username = decodedJWT.getSubject();
+		String email = decodedJWT.getSubject();
 		List<String> roles = decodedJWT.getClaim("roles").asList(String.class);
-		return createAccessToken(username, roles);
+		return createAccessToken(email, roles);
 	}
 	
-	
-	private String getAccessToken(String username, List<String> roles, Date now, Date validity) {
+	private String getAccessToken(String email, List<String> roles, Date now, Date validity) {
 		String issuerUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
 		algorithm = Algorithm.HMAC256(secret);
 		return JWT.create()
 				.withClaim("roles", roles)
 				.withIssuedAt(now)
 				.withExpiresAt(validity)
-				.withSubject(username)
+				.withSubject(email)
 				.withIssuer(issuerUrl)
 				.sign(algorithm)
 				.strip();
 	}
 	
-	private String getRefreshToken(String username, List<String> roles, Date now) {
+	private String getRefreshToken(String email, List<String> roles, Date now) {
 		Date validityRefreshToken = new Date(now.getTime() + (validityInMilliseconds * 3));
 		algorithm = Algorithm.HMAC256(secret);
 		return JWT.create()
 				.withClaim("roles", roles)
 				.withIssuedAt(now)
 				.withExpiresAt(validityRefreshToken)
-				.withSubject(username)
+				.withSubject(email)
 				.sign(algorithm)
 				.strip();
 	}
 	
 	public boolean validateToken(String token) {
-		DecodedJWT decodedJWT = decodedToken(token);
 		try {
+			DecodedJWT decodedJWT = decodedToken(token);
 			if(decodedJWT.getExpiresAt().before(new Date())) {
 				return false;
 			}
@@ -102,8 +100,12 @@ public class TokenService {
 	}
 	
 	public Authentication getAuthentication(String token) {
-		DecodedJWT decodedJWT = decodedToken(token);
-		UserDetails userDetails = this.userDetailsService.loadUserByUsername(decodedJWT.getSubject());
-		return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+		try {
+			DecodedJWT decodedJWT = decodedToken(token);
+			UserDetails userDetails = this.userDetailsService.loadUserByUsername(decodedJWT.getSubject());
+			return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+		} catch (Exception e) {
+			throw new BadCredentialsException("Usuário inexistente ou senha inválida!");
+		}
 	}
 }

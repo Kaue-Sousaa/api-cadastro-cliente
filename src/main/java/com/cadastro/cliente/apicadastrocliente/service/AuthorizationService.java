@@ -5,21 +5,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.cadastro.cliente.apicadastrocliente.repository.UserRepository;
+import com.cadastro.cliente.apicadastrocliente.repository.CadastroClienteRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class AuthorizationService implements UserDetailsService{
-	
-	private final UserRepository repository;
+public class AuthorizationService implements UserDetailsService {
 
-	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		return repository.findByLogin(username);
-	}
-
-	
-	
+    private final CadastroClienteRepository repository;
+    
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return repository.findByEmail(username);
+    }
 }

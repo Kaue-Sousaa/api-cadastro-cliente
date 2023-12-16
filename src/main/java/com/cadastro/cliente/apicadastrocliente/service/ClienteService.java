@@ -1,11 +1,12 @@
 package com.cadastro.cliente.apicadastrocliente.service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.cadastro.cliente.apicadastrocliente.dto.CadastroClienteDto;
 import com.cadastro.cliente.apicadastrocliente.exception.RequiredObjectIsNullException;
 import com.cadastro.cliente.apicadastrocliente.exception.ResourceNotFoundException;
-import com.cadastro.cliente.apicadastrocliente.model.CastroCliente;
+import com.cadastro.cliente.apicadastrocliente.model.CadastroCliente;
 import com.cadastro.cliente.apicadastrocliente.repository.CadastroClienteRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,23 +24,18 @@ public class ClienteService {
 		}
 		var entity = repository.findByNomeOrCpf(dadosCliente.nome(), dadosCliente.cpf());
 		if(entity == null) {
-			repository.save(new CastroCliente(dadosCliente));
+			if(!isValidCampoConfirmSenha(dadosCliente.senha(), dadosCliente.confirmSenha())) {
+				return "As senhas não são iguais. Tente novamente.";
+			}
+			String encryptedPassword = new BCryptPasswordEncoder().encode(dadosCliente.senha());
+			CadastroCliente cadastroCliente = new CadastroCliente(dadosCliente);
+			cadastroCliente.setSenha(encryptedPassword);
+			repository.save(cadastroCliente);
 			return "Usúario cadastrado com sucesso!";
 		}
 		return verificarCampoNomeAndCpf(entity, dadosCliente);
 	}
 	
-	private String verificarCampoNomeAndCpf(CastroCliente dadosBanco, CadastroClienteDto newDadosCliente) {
-		if(dadosBanco.getNome().equals(newDadosCliente.nome()) && dadosBanco.getCpf().equals(newDadosCliente.cpf())){
-			return "Nome e Cpf do cliente já cadastrados!";
-		}else if(dadosBanco.getNome().equals(newDadosCliente.nome()) && !dadosBanco.getCpf().equals(newDadosCliente.cpf())) {
-			return "Nome do cliente já cadastrado!";
-		}else if(!dadosBanco.getNome().equals(newDadosCliente.nome()) && dadosBanco.getCpf().equals(newDadosCliente.cpf())) {
-			return "Cpf do cliente já cadastrado!";
-		}
-		return "";
-	}
-
 	public CadastroClienteDto atualizarCadastro(CadastroClienteDto dadosCliente) {
 		if(dadosCliente == null) {
 			throw new RequiredObjectIsNullException("Dados estão nulos");
@@ -61,5 +57,24 @@ public class ClienteService {
 		var entity = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado!"));
 		repository.delete(entity);
+	}
+	
+	private String verificarCampoNomeAndCpf(CadastroCliente dadosBanco, CadastroClienteDto newDadosCliente) {
+		if(dadosBanco.getNome().equals(newDadosCliente.nome()) && dadosBanco.getCpf().equals(newDadosCliente.cpf())){
+			return "Nome e Cpf do cliente já cadastrados!";
+		}else if(dadosBanco.getNome().equals(newDadosCliente.nome()) && !dadosBanco.getCpf().equals(newDadosCliente.cpf())) {
+			return "Nome do cliente já cadastrado!";
+		}else if(!dadosBanco.getNome().equals(newDadosCliente.nome()) && dadosBanco.getCpf().equals(newDadosCliente.cpf())) {
+			return "Cpf do cliente já cadastrado!";
+		}
+		return "";
+	}
+	
+	private boolean isValidCampoConfirmSenha(String senha, String confirmSenha) {
+		if(senha.equals(confirmSenha)) {
+			return true;
+		}else {
+			return false;
+		}
 	}
 }

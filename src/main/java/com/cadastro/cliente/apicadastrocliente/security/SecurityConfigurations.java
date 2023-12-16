@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfigurations {
 	
-	final SecurityFilter securityFilter;
+	private final SecurityFilter securityFilter;
 	
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -31,8 +32,19 @@ public class SecurityConfigurations {
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 						.requestMatchers(HttpMethod.POST, "/auth/refresh/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/cliente/cadastro").permitAll()
 						.requestMatchers(HttpMethod.DELETE, "/cliente/excluir/**").hasRole("ADMIN")
 						.anyRequest().authenticated()
+				)
+				.exceptionHandling(exception -> exception
+						.accessDeniedHandler((request, response, accessDeniedException) -> {
+	                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	                        response.getWriter().write("Acesso Negado!");
+						})
+//						 .authenticationEntryPoint((request, response, authException) -> {
+//		                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+//		                        response.getWriter().write("Token invalido. Faça login novamente.");
+//		                    })
 				)
 				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();

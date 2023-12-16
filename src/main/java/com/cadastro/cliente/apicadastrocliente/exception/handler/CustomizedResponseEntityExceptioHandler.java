@@ -6,17 +6,19 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import com.cadastro.cliente.apicadastrocliente.exception.ValidFieldResponse;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.cadastro.cliente.apicadastrocliente.exception.ExceptionResponse;
 import com.cadastro.cliente.apicadastrocliente.exception.InvalidJwtAuthenticationException;
 import com.cadastro.cliente.apicadastrocliente.exception.RequiredObjectIsNullException;
 import com.cadastro.cliente.apicadastrocliente.exception.ResourceNotFoundException;
+import com.cadastro.cliente.apicadastrocliente.exception.ValidFieldResponse;
 
 @RestControllerAdvice
 public class CustomizedResponseEntityExceptioHandler {
@@ -35,7 +37,7 @@ public class CustomizedResponseEntityExceptioHandler {
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
 	}
 	
-	@ExceptionHandler(ResourceNotFoundException.class)
+	@ExceptionHandler({Exception.class,ResourceNotFoundException.class})
 	public final ResponseEntity<ExceptionResponse> handleNotFoundException(Exception ex, WebRequest request){
 		
 		ExceptionResponse exceptionResponse = new ExceptionResponse(
@@ -44,7 +46,8 @@ public class CustomizedResponseEntityExceptioHandler {
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
 	}
 	
-	@ExceptionHandler({Exception.class ,InvalidJwtAuthenticationException.class})
+	@ExceptionHandler({InvalidJwtAuthenticationException.class,
+		TokenExpiredException.class, InternalAuthenticationServiceException.class})
 	public final ResponseEntity<ExceptionResponse> handleInvalidJwtAuthenticationException(Exception ex, WebRequest request){
         
 		ExceptionResponse exceptionResponse = new ExceptionResponse(

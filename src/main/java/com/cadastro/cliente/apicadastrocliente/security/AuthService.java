@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.cadastro.cliente.apicadastrocliente.dto.AuthenticationDto;
 import com.cadastro.cliente.apicadastrocliente.dto.TokenDto;
-import com.cadastro.cliente.apicadastrocliente.repository.UserRepository;
+import com.cadastro.cliente.apicadastrocliente.repository.CadastroClienteRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,37 +21,34 @@ public class AuthService {
 	
 	private final AuthenticationManager authenticationManager;
 	
-	private final UserRepository repository;
+	private final CadastroClienteRepository repository;
 	
 	private final TokenService tokenService;
 	
 	@SuppressWarnings("rawtypes")
 	public ResponseEntity signin(AuthenticationDto data) {
-		TokenDto tokenResponse = null;
 		try {
-			var login = data.login();
-			var password = data.password();
-			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(login, password));
-			var user = repository.findByLogin(login);
-			if (user != null) {
-				tokenResponse = tokenService.createAccessToken(login, List.of(user.getRole().name()));
+			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(data.email(), data.senha()));
+			var cliente = repository.findByEmail(data.email());
+			if (cliente != null) {
+				var tokenResponse = tokenService.createAccessToken(data.email(), List.of(cliente.getRole()));
+				return ResponseEntity.ok(tokenResponse);
 			}else {
-				throw new UsernameNotFoundException("Usuário " + login + " não encontrado!");
+				throw new UsernameNotFoundException("Email " + data.email() + " não encontrado!");
 			}
-			return ResponseEntity.ok(tokenResponse);
 		} catch (Exception e) {
-			throw new BadCredentialsException("Usuário ou senha incorretos!");
+			throw new BadCredentialsException("Usuário inexistente ou senha inválida!");
 		}
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public ResponseEntity refreshToken(String login, String refreshToken) {
-		var user = repository.findByLogin(login);
+	public ResponseEntity refreshToken(String email, String refreshToken) {
+		var user = repository.findByEmail(email);
 		TokenDto tokenResponse = null;
 		if (user != null) {
 			tokenResponse = tokenService.refreshToken(refreshToken);
 		}else {
-			throw new UsernameNotFoundException("Usuário " + login + " não encontrado!");
+			throw new UsernameNotFoundException("Usuário " + email + " não encontrado!");
 		}
 		return ResponseEntity.ok(tokenResponse);
 	}

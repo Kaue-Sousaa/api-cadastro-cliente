@@ -2,8 +2,8 @@ package com.cadastro.cliente.apicadastrocliente.enums;
 
 public enum UserRole {
 	
-	ADMIN("Admin"),
-	USER("User");
+	ADMIN("ADMIN"),
+	USER("USER");
 	
 	private String role;
 	

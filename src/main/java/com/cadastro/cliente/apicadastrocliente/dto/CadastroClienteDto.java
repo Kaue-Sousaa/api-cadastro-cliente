@@ -3,7 +3,7 @@ package com.cadastro.cliente.apicadastrocliente.dto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.cadastro.cliente.apicadastrocliente.model.CastroCliente;
+import com.cadastro.cliente.apicadastrocliente.model.CadastroCliente;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.Digits;
@@ -33,13 +33,31 @@ public record CadastroClienteDto(
 		String telefone,
 		
 		@JsonFormat(pattern="dd/MM/yyyy HH:mm:ss")
+		LocalDateTime dataCriacao,
 		
-		LocalDateTime dataCriacao
+		@NotBlank(message = "Campo senha não pode ser vazio")
+		@Size(min = 8, message = "senha deve conter no minimo 8 caracteres")
+		String senha,
+		
+		String confirmSenha,
+		
+		@NotBlank
+		String role
 		
 		) {
 	
-	public CadastroClienteDto(CastroCliente cliente) {
-		this(cliente.getId(), cliente.getNome(), cliente.getEmail(), cliente.getCpf(), cliente.getRenda(),
-				cliente.getTelefone(), cliente.getDataCriacao());
+	public CadastroClienteDto(CadastroCliente cliente) {
+		this(
+				cliente.getId(), 
+				cliente.getNome(),
+				cliente.getEmail(), 
+				cliente.getCpf(), 
+				cliente.getRenda(),
+				cliente.getTelefone(), 
+				cliente.getDataCriacao(), 
+				cliente.getSenha(),
+				cliente.getConfirmSenha(),
+				cliente.getRole()
+				);
 	}
 }
