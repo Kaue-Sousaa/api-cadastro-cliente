@@ -1,9 +1,12 @@
 package com.cadastro.cliente.apicadastrocliente.controller;
 
+import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,9 +39,18 @@ public class CadastroClienteController {
 		return ResponseEntity.ok(service.atualizarCadastro(dadosCliente));
 	}
 	
+	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<CadastroClienteDto> buscarCliente(@PathVariable Integer id){
+		return ResponseEntity.ok(service.buscarCliente(id));
+	}
+	
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<CadastroClienteDto>> listarClientes(){
+		return ResponseEntity.ok(service.listarClientes());
+	}
+	
 	@DeleteMapping(value = "/excluir/{id}")
-	public void deletarCadastroCliente(@Valid @PathVariable Integer id){
+	public void deletarCadastroCliente(@PathVariable Integer id){
 		service.deletarCadastro(id);
 	} 
-	
 }

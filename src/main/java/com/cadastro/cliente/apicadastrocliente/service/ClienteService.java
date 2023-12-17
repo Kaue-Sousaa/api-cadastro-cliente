@@ -1,5 +1,8 @@
 package com.cadastro.cliente.apicadastrocliente.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +30,7 @@ public class ClienteService {
 			if(!isValidCampoConfirmSenha(dadosCliente.senha(), dadosCliente.confirmSenha())) {
 				return "As senhas não são iguais. Tente novamente.";
 			}
-			String encryptedPassword = new BCryptPasswordEncoder().encode(dadosCliente.senha());
-			CadastroCliente cadastroCliente = new CadastroCliente(dadosCliente);
-			cadastroCliente.setSenha(encryptedPassword);
-			repository.save(cadastroCliente);
-			return "Usúario cadastrado com sucesso!";
+			return salvarCliente(dadosCliente);
 		}
 		return verificarCampoNomeAndCpf(entity, dadosCliente);
 	}
@@ -52,7 +51,21 @@ public class ClienteService {
 		repository.save(entity);
 		return new CadastroClienteDto(entity);
 	}
-
+	
+	public CadastroClienteDto buscarCliente(Integer id) {
+		var entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usario não encontrado!"));
+		return new CadastroClienteDto(entity);
+	}
+	
+	public List<CadastroClienteDto> listarClientes() {
+		List<CadastroClienteDto> listaCliente = new ArrayList<>();
+		var entity = repository.findAll();
+		if(!entity.isEmpty()) {
+			listaCliente = entity.stream().map(CadastroClienteDto::new).toList();
+		}
+		return listaCliente;
+	}
+	
 	public void deletarCadastro(Integer id) {
 		var entity = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado!"));
@@ -71,10 +84,17 @@ public class ClienteService {
 	}
 	
 	private boolean isValidCampoConfirmSenha(String senha, String confirmSenha) {
-		if(senha.equals(confirmSenha)) {
-			return true;
-		}else {
-			return false;
-		}
+		return senha.equals(confirmSenha);
+	}
+
+	private String salvarCliente(CadastroClienteDto dadosCliente) {
+		CadastroCliente cadastroCliente = new CadastroCliente(dadosCliente);
+		cadastroCliente.setSenha(passwordEncoder(dadosCliente.senha()));
+		repository.save(cadastroCliente);
+		return "Usúario cadastrado com sucesso!";
+	}
+	
+	private String passwordEncoder(String senha) {
+		return new BCryptPasswordEncoder().encode(senha); 
 	}
 }

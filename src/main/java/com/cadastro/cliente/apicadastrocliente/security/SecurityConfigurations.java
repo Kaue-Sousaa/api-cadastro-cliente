@@ -41,10 +41,6 @@ public class SecurityConfigurations {
 	                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 	                        response.getWriter().write("Acesso Negado!");
 						})
-//						 .authenticationEntryPoint((request, response, authException) -> {
-//		                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-//		                        response.getWriter().write("Token invalido. Faça login novamente.");
-//		                    })
 				)
 				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
