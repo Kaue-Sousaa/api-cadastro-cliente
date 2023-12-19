@@ -53,7 +53,7 @@ public class ClienteService {
 	}
 	
 	public CadastroClienteDto buscarCliente(Integer id) {
-		var entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usario não encontrado!"));
+		var entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado!"));
 		return new CadastroClienteDto(entity);
 	}
 	
@@ -68,7 +68,7 @@ public class ClienteService {
 	
 	public void deletarCadastro(Integer id) {
 		var entity = repository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado!"));
+				.orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado!"));
 		repository.delete(entity);
 	}
 	
@@ -91,7 +91,7 @@ public class ClienteService {
 		CadastroCliente cadastroCliente = new CadastroCliente(dadosCliente);
 		cadastroCliente.setSenha(passwordEncoder(dadosCliente.senha()));
 		repository.save(cadastroCliente);
-		return "Usúario cadastrado com sucesso!";
+		return "Cliente cadastrado com sucesso!";
 	}
 	
 	private String passwordEncoder(String senha) {

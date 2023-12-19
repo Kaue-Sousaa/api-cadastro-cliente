@@ -25,14 +25,15 @@ public class SecurityFilter extends OncePerRequestFilter{
 		var token = this.recoverToken(request);
 		if(token != null && !tokenService.validateToken(token)) {
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			response.getWriter().write("Token Invalido");
+			response.getWriter().write("Token Invalido!");
+			return;
 		}else if(token != null && tokenService.validateToken(token)) {
 			Authentication auth = tokenService.getAuthentication(token);
 			if(auth != null) {
 				SecurityContextHolder.getContext().setAuthentication(auth);
 			}
 		}
-		filterChain.doFilter(request, response); 
+		filterChain.doFilter(request, response);
 	}
 
 	private String recoverToken(HttpServletRequest request) {

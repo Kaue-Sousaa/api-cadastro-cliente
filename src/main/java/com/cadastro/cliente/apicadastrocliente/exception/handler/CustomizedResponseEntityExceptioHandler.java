@@ -1,5 +1,6 @@
 package com.cadastro.cliente.apicadastrocliente.exception.handler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +28,9 @@ public class CustomizedResponseEntityExceptioHandler {
 	public final ResponseEntity<ValidFieldResponse> handleAllException(MethodArgumentNotValidException ex, WebRequest request){
 		BindingResult bindingResult = ex.getBindingResult();
         List<String> errorMessages = new ArrayList<>();
-        bindingResult.getFieldErrors().forEach(fieldError -> {
-            errorMessages.add(fieldError.getField() + ": " + fieldError.getDefaultMessage());
-        });
+        bindingResult.getFieldErrors().forEach(fieldError -> 
+            errorMessages.add(fieldError.getField() + ": " + fieldError.getDefaultMessage())
+        );
 		
 		ValidFieldResponse exceptionResponse = new ValidFieldResponse(
 				LocalDateTime.now(), errorMessages , request.getDescription(false));
@@ -37,7 +38,7 @@ public class CustomizedResponseEntityExceptioHandler {
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
 	}
 	
-	@ExceptionHandler({Exception.class,ResourceNotFoundException.class})
+	@ExceptionHandler(ResourceNotFoundException.class)
 	public final ResponseEntity<ExceptionResponse> handleNotFoundException(Exception ex, WebRequest request){
 		
 		ExceptionResponse exceptionResponse = new ExceptionResponse(
@@ -46,7 +47,7 @@ public class CustomizedResponseEntityExceptioHandler {
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
 	}
 	
-	@ExceptionHandler({InvalidJwtAuthenticationException.class,
+	@ExceptionHandler({InvalidJwtAuthenticationException.class, 
 		TokenExpiredException.class, InternalAuthenticationServiceException.class})
 	public final ResponseEntity<ExceptionResponse> handleInvalidJwtAuthenticationException(Exception ex, WebRequest request){
         
@@ -56,7 +57,7 @@ public class CustomizedResponseEntityExceptioHandler {
 		return new ResponseEntity<>(exceptionResponse, HttpStatus.UNAUTHORIZED);
 	}
 	
-	@ExceptionHandler({IllegalStateException.class, NullPointerException.class})
+	@ExceptionHandler({Exception.class,IllegalStateException.class, NullPointerException.class, InvocationTargetException.class})
 	public final ResponseEntity<ExceptionResponse> handleInternalServerErroException(
 			Exception ex, WebRequest request){
 		

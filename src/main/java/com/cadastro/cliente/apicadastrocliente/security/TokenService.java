@@ -15,9 +15,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cadastro.cliente.apicadastrocliente.dto.TokenDto;
-import com.cadastro.cliente.apicadastrocliente.exception.InvalidJwtAuthenticationException;
 
 @Service
 public class TokenService {
@@ -28,8 +28,6 @@ public class TokenService {
 	private long validityInMilliseconds = 3600000; //1h
 	
 	private final UserDetailsService userDetailsService;
-	
-	Algorithm algorithm = null;
 	
 	public TokenService(UserDetailsService userDetailsService) {
 		this.userDetailsService = userDetailsService;
@@ -47,8 +45,7 @@ public class TokenService {
 		if(refreshToken.contains("Bearer ")) {
 			refreshToken = refreshToken.substring("Bearer ".length());
 		}
-		algorithm = Algorithm.HMAC256(secret);
-		JWTVerifier verifier = JWT.require(algorithm).build();
+		JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret)).build();
 		DecodedJWT decodedJWT = verifier.verify(refreshToken);
 		String email = decodedJWT.getSubject();
 		List<String> roles = decodedJWT.getClaim("roles").asList(String.class);
@@ -57,46 +54,39 @@ public class TokenService {
 	
 	private String getAccessToken(String email, List<String> roles, Date now, Date validity) {
 		String issuerUrl = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
-		algorithm = Algorithm.HMAC256(secret);
 		return JWT.create()
 				.withClaim("roles", roles)
 				.withIssuedAt(now)
 				.withExpiresAt(validity)
 				.withSubject(email)
 				.withIssuer(issuerUrl)
-				.sign(algorithm)
+				.sign(Algorithm.HMAC256(secret))
 				.strip();
 	}
 	
 	private String getRefreshToken(String email, List<String> roles, Date now) {
 		Date validityRefreshToken = new Date(now.getTime() + (validityInMilliseconds * 3));
-		algorithm = Algorithm.HMAC256(secret);
 		return JWT.create()
 				.withClaim("roles", roles)
 				.withIssuedAt(now)
 				.withExpiresAt(validityRefreshToken)
 				.withSubject(email)
-				.sign(algorithm)
+				.sign(Algorithm.HMAC256(secret))
 				.strip();
 	}
 	
 	public boolean validateToken(String token) {
 		try {
-			DecodedJWT decodedJWT = decodedToken(token);
-			if(decodedJWT.getExpiresAt().before(new Date())) {
-				return false;
-			}
-			return true;
-		} catch (Exception e) {
-			throw new InvalidJwtAuthenticationException("Token invalido!");
+			return !decodedToken(token).getExpiresAt().before(new Date());
+		} catch (TokenExpiredException e) {
+			return false;
 		}
 	}
 	
 	private DecodedJWT decodedToken(String token) {
 		Algorithm alg = Algorithm.HMAC256(secret.getBytes());
 		JWTVerifier verifier = JWT.require(alg).build();
-		DecodedJWT decodedJWT = verifier.verify(token);
-		return decodedJWT;
+		return verifier.verify(token);
 	}
 	
 	public Authentication getAuthentication(String token) {

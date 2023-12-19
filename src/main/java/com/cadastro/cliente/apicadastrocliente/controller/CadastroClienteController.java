@@ -30,7 +30,11 @@ public class CadastroClienteController {
 	
 	@PostMapping(value="/cadastro",consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> cadastrarCliente(@Valid @RequestBody CadastroClienteDto dadosCliente){
-		return ResponseEntity.ok(service.cadastrarCliente(dadosCliente));
+		var cadastro = service.cadastrarCliente(dadosCliente);
+		if(cadastro.contains("sucesso")) {
+			return ResponseEntity.ok(cadastro);
+		}
+		return ResponseEntity.badRequest().body(cadastro);
 	}
 	
 	@PutMapping(value = "/atualizar",consumes = MediaType.APPLICATION_JSON_VALUE,
