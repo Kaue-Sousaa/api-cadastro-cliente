@@ -1,0 +1,21 @@
+version: '4'
+services:
+  app:
+    build: ./
+    ports:
+      - "8089:8089"
+    networks:
+      - dockercompose
+    depends_on:
+      - db
+  db:
+    build: ./docker-db-config/
+    ports: 
+     - "5432:5432"
+    networks:
+      - dockercompose
+    env_file:
+      - ./docker-db-config/postgres.properties
+      
+networks:
+  dockercompose:
